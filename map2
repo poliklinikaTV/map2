@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <title>Карта ПоликлиникаТВ</title>
+    <script src="https://api-maps.yandex.ru/2.1/?lang=ru_RU" type="text/javascript"></script>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>
+        html, body { margin: 0; padding: 0; height: 100%; width: 100%; background-color: #505050; color: white; }
+        #map { width: 100vw; height: 100vh; }
+    </style>
+</head>
+<body>
+<h1 style="text-align:center; font-family: 'Playfair Display', serif;">Карта ПоликлиникаТВ</h1>
+<div id="map"></div>
+
+<script>
+    const sheetUrl = 'https://script.google.com/macros/s/XYZ123/exec'; // ← вставь сюда свою ссылку
+
+    ymaps.ready(() => {
+        fetch(sheetUrl)
+            .then(response => response.json())
+            .then(data => {
+                const map = new ymaps.Map("map", {
+                    center: [54.5, 48.5],
+                    zoom: 6
+                });
+
+                data.forEach(entry => {
+                    const coords = [parseFloat(entry['Широта']), parseFloat(entry['Долгота'])];
+                    const type = entry['Тип (цвет)']?.toLowerCase() || 'gray';
+
+                    const colorMap = {
+                        'зеленый': '#008000',
+                        'оранжевый': '#FFA500',
+                        'красный': '#FF0000',
+                        'синий': '#0000FF',
+                        'голубой': 'SkyBlue',
+                        'другое': 'Gray'
+                    };
+
+                    const placemark = new ymaps.Placemark(coords, {
+                        balloonContentHeader: entry['Название'],
+                        balloonContentBody: `<strong>Адрес:</strong> ${entry['Адрес'] || '—'}`,
+                    }, {
+                        iconColor: colorMap[type] || '#999'
+                    });
+
+                    map.geoObjects.add(placemark);
+                });
+            })
+            .catch(err => console.error('Ошибка загрузки данных:', err));
+    });
+</script>
+</body>
+</html>
